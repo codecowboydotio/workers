@@ -1,20 +1,4 @@
 /**
- * Example someHost is set up to take in a JSON request
- * Replace url with the host you wish to send requests to
- * @param {string} someHost the host to send the request to
- * @param {string} url the URL to send the request to
- */
-const base = "https://swapi.dev/api/"
-const url  = "https://swapi.dev/api/"
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
-  "Access-Control-Max-Age": "86400",
-}
-
-
-
-/**
  * gatherResponse awaits and returns a response body as a string.
  * Use await gatherResponse(..) in an async function to get the response body
  * @param {Response} response
@@ -46,13 +30,15 @@ async function handleRequest(data) {
     headers: {
       "content-type": "application/json;charset=UTF-8",
       "access-control-allow-origin": "*",
+      "cache-control": "max-age=0",
     },
   }
   var path = data.url.replace(/^https:\/\/.*?\//gi, "/");
   console.log(data.url)
   console.log(path)
-  const swapi = "https://swapi.dev/api"
+  const swapi = "http://svk-swapi-api.sales-public.f5demos.com"
   const url = swapi + path
+  console.log(url)
   const response = await fetch(url, init)
   const results = await gatherResponse(response)
   return new Response(results, init)

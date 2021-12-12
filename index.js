@@ -35,7 +35,6 @@ const DEMO_PAGE = `
   <meta charset="utf-8">
   <title>Cloudflare API Demo</title>
 </head>
-
   <body>
       <h3 class="text-center">Cloudflare fun</h3>
       <div class="container" id="unit-get">
@@ -45,12 +44,6 @@ const DEMO_PAGE = `
                 <a v-bind:href="key">{{ key }}</a>
                 <v-btn v-on:click="people">{{ key }}</v-btn>
             </div>
-          </div>
-        </div>
-      </div>
-      <div class="container" id="keyval-post">
-        <div class="columns medium-4">
-          <div class="card">
           </div>
         </div>
       </div>
@@ -72,7 +65,7 @@ const DEMO_PAGE = `
     <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <script>
-      const url = "https://swapi.dev/api/"
+      const url = "http://13.239.98.243:3000/"
       const backend = "https://swapi.scottvankalken.workers.dev/"
       const stuff = new Vue({
          el: '#unit-get',
@@ -92,7 +85,7 @@ const DEMO_PAGE = `
               .then((response) => {
                 console.log(response.data)
               })
-           } //end of submit
+           } //end of people
          } //end of methods
       });
     </script>
