@@ -42,8 +42,8 @@ const DEMO_PAGE = `
         <div class="columns medium-4">
           <div class="card">
             <div class="card-section" v-for="(value, key) in results">
-                <a v-bind:href="value">{{ value }}</a>
-                <v-btn @click="submit">{{ key }}</v-btn>
+                <a v-bind:href="key">{{ key }}</a>
+                <v-btn v-on:click="people">{{ key }}</v-btn>
             </div>
           </div>
         </div>
@@ -73,6 +73,7 @@ const DEMO_PAGE = `
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <script>
       const url = "https://swapi.dev/api/"
+      const backend = "https://swapi.scottvankalken.workers.dev/"
       const stuff = new Vue({
          el: '#unit-get',
          data: {
@@ -85,16 +86,11 @@ const DEMO_PAGE = `
            })
          }, // end mounted
          methods: {
-           submit(){
-             axios.get(url)
+           people(){
+             var backend_uri = backend + "people"
+             axios.get(backend_uri)
               .then((response) => {
-                console.log(response.data["x.x.x.x"])
-                axios.delete(url, { '"x.x.x.x"': response.data["x.x.x.x"] })
-                  .then((response) => {
-                    console.log(response)
-                    axios.post(url, {'x.x.x.x': this.splitpercent})
-                    location.reload();
-                  })
+                console.log(response.data)
               })
            } //end of submit
          } //end of methods

@@ -6,6 +6,12 @@
  */
 const base = "https://swapi.dev/api/"
 const url  = "https://swapi.dev/api/"
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
+  "Access-Control-Max-Age": "86400",
+}
+
 
 
 /**
@@ -39,6 +45,7 @@ async function handleRequest(data) {
   const init = {
     headers: {
       "content-type": "application/json;charset=UTF-8",
+      "access-control-allow-origin": "*",
     },
   }
   var path = data.url.replace(/^https:\/\/.*?\//gi, "/");
