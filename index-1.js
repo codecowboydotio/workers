@@ -8,13 +8,6 @@ const corsHeaders = {
   "Access-Control-Max-Age": "86400",
 }
 
-// The URL for the remote third party API you want to fetch from
-// but does not implement CORS
-const API_URL = "http://httpbin.org/post"
-
-// The endpoint you want the CORS reverse proxy to be on
-const PROXY_ENDPOINT = "/corsproxy/"
-
 // The rest of this snippet for the demo page
 function rawHtmlResponse(html) {
   return new Response(html, {
@@ -36,23 +29,18 @@ const DEMO_PAGE = `
   <title>Cloudflare Frontend</title>
 </head>
   <body>
-      <h3 class="text-center">Cloudflare fun</h3>
+      <h3 class="text-center">Cloudflare Worker Frontend</h3>
       <div class="container" id="unit-get">
         <div class="columns medium-8">
           <div class="card"> 
             <div class="card-section">
                 <v-btn v-on:click="people">People</v-btn>
                 <v-btn v-on:click="planets">Planets</v-btn>
+                <v-btn v-on:click="vehicles">Vehicles</v-btn>
             </div>
-            <p v-if="called !== null">Worker URL: {{ called }}</p>
+            <p v-if="called !== null">API URL: {{ called }}</p>
             <div class="card-section" v-for="(key, value) in results">
               <p>{{ key.name }}</p>
-              <div v-if="called == 'https://swapi.scottvankalken.workers.dev/people'">
-                <img v-bind:src="'https://svk-swapi-api.sales-public.f5demos.com/' + key.image" />
-              </div>
-              <div v-if="called == 'https://swapi.scottvankalken.workers.dev/vehicles'">
-                <img v-bind:src="'https://svk-swapi-api.sales-public.f5demos.com/' + key.image" />
-              </div>
             </div>
           </div>
         </div>
@@ -124,10 +112,6 @@ const DEMO_PAGE = `
 async function handleRequest(request) {
   const url = new URL(request.url)
   let apiUrl = url.searchParams.get("apiurl")
-
-  if (apiUrl == null) {
-    apiUrl = API_URL
-  }
 
   // Rewrite request to point to API url. This also makes the request mutable
   // so we can add the correct Origin header to make the API server think
