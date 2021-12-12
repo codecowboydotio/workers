@@ -1,84 +1,197 @@
-import { Router } from 'itty-router'
+// We support the GET, POST, HEAD, and OPTIONS methods from any origin,
+// and allow any header on requests. These headers must be present
+// on all responses to all CORS preflight requests. In practice, this means
+// all responses to OPTIONS requests.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
+  "Access-Control-Max-Age": "86400",
+}
 
-// Create a new router
-const router = Router()
+// The URL for the remote third party API you want to fetch from
+// but does not implement CORS
+const API_URL = "http://httpbin.org/post"
 
-/*
-Our index route, a simple hello world.
-*/
-router.get("/", () => {
-  return new Response("Hello, world! This is the root page of your Worker template.")
-})
+// The endpoint you want the CORS reverse proxy to be on
+const PROXY_ENDPOINT = "/corsproxy/"
 
-/*
-This route demonstrates path parameters, allowing you to extract fragments from the request
-URL.
-
-Try visit /example/hello and see the response.
-*/
-router.get("/example/:text", ({ params }) => {
-  // Decode text like "Hello%20world" into "Hello world"
-  let input = decodeURIComponent(params.text)
-
-  // Construct a buffer from our input
-  let buffer = Buffer.from(input, "utf8")
-
-  // Serialise the buffer into a base64 string
-  let base64 = buffer.toString("base64")
-
-  // Return the HTML with the string to the client
-  return new Response(`<p>Base64 encoding: <code>${base64}</code></p>`, {
+// The rest of this snippet for the demo page
+function rawHtmlResponse(html) {
+  return new Response(html, {
     headers: {
-      "Content-Type": "text/html"
-    }
+      "content-type": "text/html;charset=UTF-8",
+    },
   })
-})
+}
 
-/*
-This shows a different HTTP method, a POST.
+const DEMO_PAGE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.3.1/css/foundation.min.css">
+<link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <title>Cloudflare API Demo</title>
+</head>
 
-Try send a POST request using curl or another tool.
+  <body>
+      <h3 class="text-center">Cloudflare fun</h3>
+      <div class="container" id="unit-get">
+        <div class="columns medium-4">
+          <div class="card">
+            <div class="card-section" v-for="(value, key) in results">
+                <a v-bind:href="value">{{ value }}</a>
+                <v-btn @click="submit">{{ key }}</v-btn>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container" id="keyval-post">
+        <div class="columns medium-4">
+          <div class="card">
+          </div>
+        </div>
+      </div>
+<div>
+  <div class="text-center">
+    <v-progress-circular
+      :value="100"
+      color="blue-grey"
+    ></v-progress-circular>
+  </div>
+</div>
+<style scoped>
+.v-progress-circular {
+  margin: 1rem;
+}
+</style>
 
-Try the below curl command to send JSON:
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script>
+      const url = "https://swapi.dev/api/"
+      const stuff = new Vue({
+         el: '#unit-get',
+         data: {
+           results: []
+         },
+         mounted() {
+           axios.get(url).then(response => {
+             this.results = response.data
+             console.log(response.data)
+           })
+         }, // end mounted
+         methods: {
+           submit(){
+             axios.get(url)
+              .then((response) => {
+                console.log(response.data["x.x.x.x"])
+                axios.delete(url, { '"x.x.x.x"': response.data["x.x.x.x"] })
+                  .then((response) => {
+                    console.log(response)
+                    axios.post(url, {'x.x.x.x': this.splitpercent})
+                    location.reload();
+                  })
+              })
+           } //end of submit
+         } //end of methods
+      });
+    </script>
+  </body>
+</html>
+`
 
-$ curl -X POST <worker> -H "Content-Type: application/json" -d '{"abc": "def"}'
-*/
-router.post("/post", async request => {
-  // Create a base object with some fields.
-  let fields = {
-    "asn": request.cf.asn,
-    "colo": request.cf.colo,
-    "city": request.cf.city
+async function handleRequest(request) {
+  const url = new URL(request.url)
+  let apiUrl = url.searchParams.get("apiurl")
+
+  if (apiUrl == null) {
+    apiUrl = API_URL
   }
 
-  // If the POST data is JSON then attach it to our response.
-  if (request.headers.get("Content-Type") === "application/json") {
-    fields["json"] = await request.json()
-  }
+  // Rewrite request to point to API url. This also makes the request mutable
+  // so we can add the correct Origin header to make the API server think
+  // that this request isn't cross-site.
+  request = new Request(apiUrl, request)
+  request.headers.set("Origin", new URL(apiUrl).origin)
+  let response = await fetch(request)
 
-  // Serialise the JSON to a string.
-  const returnData = JSON.stringify(fields, null, 3);
+  // Recreate the response so we can modify the headers
+  response = new Response(response.body, response)
 
-  return new Response(returnData, {
-    headers: {
-      "Content-Type": "application/json"
+  // Set CORS headers
+  response.headers.set("Access-Control-Allow-Origin", url.origin)
+
+  // Append to/Add Vary header so browser will cache response correctly
+  response.headers.append("Vary", "Origin")
+
+  return response
+}
+
+function handleOptions(request) {
+  // Make sure the necessary headers are present
+  // for this to be a valid pre-flight request
+  let headers = request.headers;
+  if (
+    headers.get("Origin") !== null &&
+    headers.get("Access-Control-Request-Method") !== null &&
+    headers.get("Access-Control-Request-Headers") !== null
+  ){
+    // Handle CORS pre-flight request.
+    // If you want to check or reject the requested method + headers
+    // you can do that here.
+    let respHeaders = {
+      ...corsHeaders,
+    // Allow all future content Request headers to go back to browser
+    // such as Authorization (Bearer) or X-Client-Name-Version
+      "Access-Control-Allow-Headers": request.headers.get("Access-Control-Request-Headers"),
     }
-  })
+
+    return new Response(null, {
+      headers: respHeaders,
+    })
+  }
+  else {
+    // Handle standard OPTIONS request.
+    // If you want to allow other HTTP Methods, you can do that here.
+    return new Response(null, {
+      headers: {
+        Allow: "GET, HEAD, POST, OPTIONS",
+      },
+    })
+  }
+}
+
+addEventListener("fetch", event => {
+  const request = event.request
+  const url = new URL(request.url)
+  if(url.pathname.startsWith(PROXY_ENDPOINT)){
+    if (request.method === "OPTIONS") {
+      // Handle CORS preflight requests
+      event.respondWith(handleOptions(request))
+    }
+    else if(
+      request.method === "GET" ||
+      request.method === "HEAD" ||
+      request.method === "POST"
+    ){
+      // Handle requests to the API server
+      event.respondWith(handleRequest(request))
+    }
+    else {
+      event.respondWith(
+        new Response(null, {
+          status: 405,
+          statusText: "Method Not Allowed",
+        }),
+      )
+    }
+  }
+  else {
+    // Serve demo page
+    event.respondWith(rawHtmlResponse(DEMO_PAGE))
+  }
 })
-
-/*
-This is the last route we define, it will match anything that hasn't hit a route we've defined
-above, therefore it's useful as a 404 (and avoids us hitting worker exceptions, so make sure to include it!).
-
-Visit any page that doesn't exist (e.g. /foobar) to see it in action.
-*/
-router.all("*", () => new Response("404, not found!", { status: 404 }))
-
-/*
-This snippet ties our worker to the router we deifned above, all incoming requests
-are passed to the router where your routes are called and the response is sent.
-*/
-addEventListener('fetch', (e) => {
-  e.respondWith(router.handle(e.request))
-})
-
