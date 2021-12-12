@@ -44,6 +44,7 @@ const DEMO_PAGE = `
                 <v-btn v-on:click="people">People</v-btn>
                 <v-btn v-on:click="planets">Planets</v-btn>
             </div>
+            <p v-if="called !== null">{{ called }}</p>
             <div class="card-section" v-for="(key, value) in results">
               <p>{{ key.name }}</p>
             </div>
@@ -73,7 +74,8 @@ const DEMO_PAGE = `
       const stuff = new Vue({
          el: '#unit-get',
          data: {
-           results: []
+           results: [],
+           called: null
          },
          methods: {
            people(){
@@ -83,6 +85,7 @@ const DEMO_PAGE = `
               .then((response) => {
                 console.log(response.data)
                 this.results = response.data
+                this.called = be_url
               })
            }, //end of people
            planets(){
@@ -92,6 +95,7 @@ const DEMO_PAGE = `
               .then((response) => {
                 console.log(response.data)
                 this.results = response.data
+                this.called = be_url
               })
            } //end of planets
          } //end of methods
