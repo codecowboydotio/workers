@@ -38,15 +38,22 @@ const DEMO_PAGE = `
   <body>
       <h3 class="text-center">Cloudflare fun</h3>
       <div class="container" id="unit-get">
-        <div class="columns medium-4">
+        <div class="columns medium-8">
           <div class="card"> 
             <div class="card-section">
                 <v-btn v-on:click="people">People</v-btn>
                 <v-btn v-on:click="planets">Planets</v-btn>
+                <v-btn v-on:click="vehicles">Vehicles</v-btn>
             </div>
-            <p v-if="called !== null">{{ called }}</p>
+            <p v-if="called !== null">Worker URL: {{ called }}</p>
             <div class="card-section" v-for="(key, value) in results">
               <p>{{ key.name }}</p>
+              <div v-if="called == 'https://swapi.scottvankalken.workers.dev/people'">
+                <img v-bind:src="'https://svk-swapi-api.sales-public.f5demos.com/' + key.image" />
+              </div>
+              <div v-if="called == 'https://swapi.scottvankalken.workers.dev/vehicles'">
+                <img v-bind:src="'https://svk-swapi-api.sales-public.f5demos.com/' + key.image" />
+              </div>
             </div>
           </div>
         </div>
@@ -97,7 +104,17 @@ const DEMO_PAGE = `
                 this.results = response.data
                 this.called = be_url
               })
-           } //end of planets
+           }, //end of planets
+           vehicles(){
+             var be_url = backend + "vehicles"
+             console.log(be_url)
+             axios.get(be_url)
+              .then((response) => {
+                console.log(response.data)
+                this.results = response.data
+                this.called = be_url
+              })
+           } //end of vehicles
          } //end of methods
       });
     </script>
