@@ -43,6 +43,7 @@ const DEMO_PAGE = `
             <div class="card-section">
                 <v-btn v-on:click="people">People</v-btn>
                 <v-btn v-on:click="planets">Planets</v-btn>
+                <v-btn v-on:click="vehicles">Vehicles</v-btn>
             </div>
             <p v-if="called !== null">Worker URL: {{ called }}</p>
             <div class="card-section" v-for="(key, value) in results">
