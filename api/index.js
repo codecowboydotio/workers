@@ -36,7 +36,7 @@ async function handleRequest(data) {
   var path = data.url.replace(/^https:\/\/.*?\//gi, "/");
   console.log(data.url)
   console.log(path)
-  const swapi = "http://svk-swapi-api.sales-public.f5demos.com"
+  const swapi = "https://svk-swapi-api.sales-public.f5demos.com"
   const url = swapi + path
   console.log(url)
   const response = await fetch(url, init)

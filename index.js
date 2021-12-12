@@ -40,9 +40,9 @@ const DEMO_PAGE = `
       <div class="container" id="unit-get">
         <div class="columns medium-4">
           <div class="card">
-            <div class="card-section" v-for="(value, key) in results">
-                <a v-bind:href="key">{{ key }}</a>
-                <v-btn v-on:click="people">{{ key }}</v-btn>
+            <div class="card-section">
+                <v-btn v-on:click="people">People</v-btn>
+                <v-btn v-on:click="people">Planets</v-btn>
             </div>
           </div>
         </div>
@@ -65,23 +65,18 @@ const DEMO_PAGE = `
     <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <script>
-      const url = "http://13.239.98.243:3000/"
+      const url = "https://svk-swapi-api.sales-public.f5demos.com/"
       const backend = "https://swapi.scottvankalken.workers.dev/"
       const stuff = new Vue({
          el: '#unit-get',
          data: {
            results: []
          },
-         mounted() {
-           axios.get(url).then(response => {
-             this.results = response.data
-             console.log(response.data)
-           })
-         }, // end mounted
          methods: {
            people(){
-             var backend_uri = backend + "people"
-             axios.get(backend_uri)
+             var be_url = url + "people"
+             console.log(be_url)
+             axios.get(be_url)
               .then((response) => {
                 console.log(response.data)
               })
