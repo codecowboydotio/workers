@@ -33,16 +33,19 @@ const DEMO_PAGE = `
 <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
   <meta charset="utf-8">
-  <title>Cloudflare API Demo</title>
+  <title>Cloudflare Frontend</title>
 </head>
   <body>
       <h3 class="text-center">Cloudflare fun</h3>
       <div class="container" id="unit-get">
         <div class="columns medium-4">
-          <div class="card">
+          <div class="card"> 
             <div class="card-section">
                 <v-btn v-on:click="people">People</v-btn>
-                <v-btn v-on:click="people">Planets</v-btn>
+                <v-btn v-on:click="planets">Planets</v-btn>
+            </div>
+            <div class="card-section" v-for="(key, value) in results">
+              <p>{{ key.name }}</p>
             </div>
           </div>
         </div>
@@ -74,13 +77,23 @@ const DEMO_PAGE = `
          },
          methods: {
            people(){
-             var be_url = url + "people"
+             var be_url = backend + "people"
              console.log(be_url)
              axios.get(be_url)
               .then((response) => {
                 console.log(response.data)
+                this.results = response.data
               })
-           } //end of people
+           }, //end of people
+           planets(){
+             var be_url = backend + "planets"
+             console.log(be_url)
+             axios.get(be_url)
+              .then((response) => {
+                console.log(response.data)
+                this.results = response.data
+              })
+           } //end of planets
          } //end of methods
       });
     </script>
@@ -152,30 +165,6 @@ function handleOptions(request) {
 addEventListener("fetch", event => {
   const request = event.request
   const url = new URL(request.url)
-  if(url.pathname.startsWith(PROXY_ENDPOINT)){
-    if (request.method === "OPTIONS") {
-      // Handle CORS preflight requests
-      event.respondWith(handleOptions(request))
-    }
-    else if(
-      request.method === "GET" ||
-      request.method === "HEAD" ||
-      request.method === "POST"
-    ){
-      // Handle requests to the API server
-      event.respondWith(handleRequest(request))
-    }
-    else {
-      event.respondWith(
-        new Response(null, {
-          status: 405,
-          statusText: "Method Not Allowed",
-        }),
-      )
-    }
-  }
-  else {
     // Serve demo page
     event.respondWith(rawHtmlResponse(DEMO_PAGE))
-  }
 })
