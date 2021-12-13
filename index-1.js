@@ -30,8 +30,9 @@ const DEMO_PAGE = `
           <div class="card"> 
             <div class="card-section">
                 <v-btn v-on:click="people">People</v-btn>
-                <v-btn v-on:click="planets">Planets</v-btn>
+                <!-- <v-btn v-on:click="planets">Planets</v-btn> -->
                 <v-btn v-on:click="vehicles">Vehicles</v-btn>
+                <v-btn v-on:click="starships">Starships</v-btn>
             </div>
             <p v-if="called !== null">API URL: {{ called }}</p>
             <div class="card-section" v-for="(key, value) in results">
@@ -89,6 +90,16 @@ const DEMO_PAGE = `
            }, //end of planets
            vehicles(){
              var be_url = backend + "vehicles"
+             console.log(be_url)
+             axios.get(be_url)
+              .then((response) => {
+                console.log(response.data)
+                this.results = response.data
+                this.called = be_url
+              })
+           }, //end of vehicles
+           starships(){
+             var be_url = backend + "starships"
              console.log(be_url)
              axios.get(be_url)
               .then((response) => {
