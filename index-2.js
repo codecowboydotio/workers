@@ -24,7 +24,7 @@ const DEMO_PAGE = `
   <title>Cloudflare Frontend</title>
 </head>
   <body>
-      <h3 class="text-center">V2: Cloudflare Worker Frontend</h3>
+      <h3 class="text-center" style="color:red;">V2: Cloudflare Worker Frontend</h3>
       <div class="container" id="unit-get">
         <div class="columns medium-8">
           <div class="card"> 
