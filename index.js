@@ -24,7 +24,7 @@ const DEMO_PAGE = `
   <title>Cloudflare Frontend</title>
 </head>
   <body>
-      <h3 class="text-center">Cloudflare Worker Frontend</h3>
+      <h3 class="text-center" style="color:red;">V2: Cloudflare Worker Frontend</h3>
       <div class="container" id="unit-get">
         <div class="columns medium-8">
           <div class="card"> 
@@ -37,6 +37,15 @@ const DEMO_PAGE = `
             <p v-if="called !== null">API URL: {{ called }}</p>
             <div class="card-section" v-for="(key, value) in results">
               <p>{{ key.name }}</p>
+              <div v-if="called == 'https://swapi.scottvankalken.workers.dev/people'">
+                <img v-bind:src="'https://svk-swapi-api.sales-public.f5demos.com/' + key.image" />
+              </div>
+              <div v-if="called == 'https://swapi.scottvankalken.workers.dev/vehicles'">
+                <img v-bind:src="'https://svk-swapi-api.sales-public.f5demos.com/' + key.image" />
+              </div>
+              <div v-if="called == 'https://swapi.scottvankalken.workers.dev/starships'">
+                <img v-bind:src="'https://svk-swapi-api.sales-public.f5demos.com/' + key.image" />
+              </div>
             </div>
           </div>
         </div>
